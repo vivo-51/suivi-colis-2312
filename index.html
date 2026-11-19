@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Suivi des envois | La Poste</title>
+  <style>
+    /* =====================================================================
+       CHARTE OFFICIELLE LA POSTE SUISSE (POST.CH) — SOBRE & INSTITUTIONNELLE
+       ===================================================================== */
+    :root {
+      --post-yellow: #FFCC00;
+      --post-yellow-hover: #F0C000;
+      --post-red: #DA291C;
+      --post-white: #FFFFFF;
+      --post-bg: #F5F5F5;
+      --post-charcoal: #1A1A1A;
+      --post-muted: #595959;
+      --post-border: #E0E0E0;
+      --post-green: #16A34A;
+      --post-green-soft: #ECFDF3;
+      --post-amber-bg: #FFFBEB;
+      --post-amber-border: #F5D061;
+      --post-amber-text: #7A5600;
+      --radar-bg: #0D151A;
+      --radar-panel: #131E25;
+      --wa-bubble: #E7FFDB;
+      --wa-border: #CBEAB9;
+      --wa-blue: #34B7F1;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: #F4F5F6;
+      color: var(--post-charcoal);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* =====================================================================
+       EN-TÊTE OFFICIEL JAUNE LA POSTE + FIL D'ARIANE BLANC
+       ===================================================================== */
+    .post-header {
+      background-color: var(--post-yellow);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .header-inner {
+      max-width: 552px;
+      margin: 0 auto;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .post-logo-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      text-decoration: none;
+    }
+
+    .post-logo-text {
+      font-size: 1.2rem;
+      font-weight: 900;
+      font-style: italic;
+      color: var(--post-charcoal);
+      letter-spacing: 0.02em;
+      line-height: 1;
+    }
+
+    .header-lang {
+      font-weight: 700;
+      font-size: 0.78rem;
+      color: var(--post-charcoal);
+      padding: 4px 9px;
+      border-radius: 4px;
+      background-color: rgba(0, 0, 0, 0.09);
+    }
+
+    .breadcrumb-bar {
+      background-color: var(--post-white);
+      border-bottom: 1px solid #E5E7EB;
+    }
+
+    .breadcrumb-inner {
+      max-width: 552px;
+      margin: 0 auto;
+      padding: 10px 16px;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .breadcrumb-root {
+      font-weight: 600;
+      color: var(--post-charcoal);
+    }
+
+    .breadcrumb-sep {
+      color: #9CA3AF;
+    }
+
+    .breadcrumb-current {
+      color: #6B7280;
+    }
+
+    /* =====================================================================
+       CONTENEUR PRINCIPAL & GESTION DES VUES
+       ===================================================================== */
+    .main-container {
+      flex: 1;
+      width: 100%;
+      max-width: 552px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    .view {
+      display: none;
+      animation: viewFade 0.3s ease-out;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    @keyframes viewFade {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background-color: var(--post-white);
+      border: 1px solid #E5E7EB;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .card-title {
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: var(--post-charcoal);
+      margin-bottom: 4px;
+    }
+
+    .card-subtitle {
+      font-size: 0.84rem;
+      color: #6B7280;
+      margin-bottom: 16px;
+      line-height: 1.45;
+    }
+
+    /* =====================================================================
+       PAGE 1 : CARTE ENVOI SUIVI & OPTIONS DE LIVRAISON
+       ===================================================================== */
+    .parcel-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #F0F1F3;
+      margin-bottom: 14px;
+    }
+
+    .parcel-label {
+      display: block;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #6B7280;
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+
+    .tracking-code {
+      font-family: var(--font-sans);
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--post-charcoal);
+      letter-spacing: 0.01em;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: #FEF3C7;
+      color: #92400E;
+      font-size: 0.76rem;
+      font-weight: 600;
+      padding: 5px 11px;
+      border-radius: 999px;
+    }
+
+    .status-badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: #F59E0B;
+      flex-shrink: 0;
+    }
+
+    .parcel-meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.82rem;
+      color: #6B7280;
+    }
+
+    .parcel-meta-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .parcel-meta-item strong {
+      color: var(--post-charcoal);
+      font-weight: 600;
+    }
+
+    /* =====================================================================
+       PAGE 1 : CHOIX DU MODE DE LIVRAISON (2 CARTES RADIO)
+       ===================================================================== */
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .option-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 15px 16px;
+      border: 1.5px solid #E5E7EB;
+      border-radius: 10px;
+      background-color: var(--post-white);
+      cursor: pointer;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .option-card:hover {
+      border-color: #CBD5E1;
+      background-color: #FAFAFA;
+    }
+
+    .option-card.selected {
+      border-color: var(--post-charcoal);
+      background-color: #FFFEF7;
+    }
+
+    .option-radio {
+      margin-top: 3px;
+      width: 17px;
+      height: 17px;
+      accent-color: var(--post-charcoal);
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .option-body {
+      flex: 1;
+    }
+
+    .option-top {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 3px;
+    }
+
+    .option-name {
+      font-size: 0.94rem;
+      font-weight: 700;
+      color: var(--post-charcoal);
+    }
+
+    .option-badge-grey {
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: #4B5563;
+      background-color: #F3F4F6;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .option-badge-green {
+      display: inline-block;
+      margin: 4px 0 5px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: #047857;
+      background-color: #ECFDF5;
+      border: 1px solid #A7F3D0;
+      padding: 2px 8px;
+      border-radius: 5px;
+    }
+
+    .option-desc {
+      font-size: 0.82rem;
+      color: #6B7280;
+      line-height: 1.4;
+    }
+
+    /* Bouton CTA officiel La Poste */
+    .btn-post-primary {
+      width: 100%;
+      background-color: var(--post-yellow);
+      color: var(--post-charcoal);
+      border: none;
+      border-radius: 8px;
+      padding: 13px 20px;
+      font-size: 0.96rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+
+    .btn-post-primary:hover {
+      background-color: var(--post-yellow-hover);
+    }
+
+    .btn-post-primary:active {
+      background-color: #E5B800;
+    }
+
+    .btn-post-secondary {
+      background-color: var(--post-white);
+      color: var(--post-charcoal);
+      border: 1px solid var(--post-border);
+      border-radius: 8px;
+      padding: 11px 16px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+
+    .btn-post-secondary:hover {
+      background-color: var(--post-bg);
+    }
+
+    .subcard-info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.78rem;
+      color: #6B7280;
+      padding: 2px 4px;
+    }
+
+    /* =====================================================================
+       MODALE POLIE POUR LIVRAISON STANDARD (24.12.2026)
+       ===================================================================== */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(26, 26, 26, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 60;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background-color: var(--post-white);
+      border-radius: 8px;
+      max-width: 460px;
+      width: 100%;
+      padding: 24px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+      border: 1px solid var(--post-border);
+    }
+
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--post-charcoal);
+      margin-bottom: 10px;
+    }
+
+    .modal-text {
+      font-size: 0.9rem;
+      color: var(--post-muted);
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .modal-tip {
+      background-color: #FFFBEB;
+      border-left: 3px solid var(--post-yellow);
+      padding: 11px 13px;
+      font-size: 0.86rem;
+      color: var(--post-charcoal);
+      border-radius: 0 6px 6px 0;
+      margin-bottom: 18px;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* =====================================================================
+       PAGE 2 : MODULE RADAR LIVE SOUS EN-TÊTE LA POSTE
+       ===================================================================== */
+    .live-header-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .live-header-bar h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--post-charcoal);
+    }
+
+    .live-ref {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--post-muted);
+      background-color: var(--post-white);
+      border: 1px solid var(--post-border);
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    .radar-module {
+      background-color: var(--radar-bg);
+      color: #E6EDF3;
+      border-radius: 10px;
+      padding: 18px;
+      border: 1px solid #1E2D38;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .radar-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .radar-signal {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--post-yellow);
+    }
+
+    .radar-signal.delivered {
+      color: #4ADE80;
+    }
+
+    .signal-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background-color: var(--post-yellow);
+      box-shadow: 0 0 8px var(--post-yellow);
+      animation: signalPulse 1.3s ease-in-out infinite;
+    }
+
+    .radar-signal.delivered .signal-dot {
+      background-color: var(--post-green);
+      box-shadow: 0 0 10px var(--post-green);
+      animation: none;
+    }
+
+    @keyframes signalPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.8); }
+    }
+
+    .radar-sector {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      color: #9FB1C0;
+      background-color: rgba(255, 255, 255, 0.06);
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .radar-canvas-container {
+      width: 100%;
+      max-width: 310px;
+      aspect-ratio: 1 / 1;
+      margin: 0 auto 16px;
+      border-radius: 50%;
+      background: radial-gradient(circle at center, #11222A 0%, #091015 78%);
+      border: 1.5px solid rgba(255, 204, 0, 0.25);
+      box-shadow: inset 0 0 28px rgba(0, 0, 0, 0.65);
+      transition: border-color 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    .radar-canvas-container.delivered {
+      border-color: var(--post-green);
+      box-shadow: inset 0 0 28px rgba(22, 163, 74, 0.25), 0 0 18px rgba(22, 163, 74, 0.25);
+    }
+
+    #radarCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: 50%;
+    }
+
+    .radar-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .metric-tile {
+      background-color: var(--radar-panel);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+
+    .metric-label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #8EA3B5;
+      margin-bottom: 2px;
+    }
+
+    .metric-value {
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--post-yellow);
+    }
+
+    .metric-value.delivered {
+      color: #4ADE80;
+    }
+
+    .radar-status-bar {
+      background-color: #080E12;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 54px;
+      transition: border-color 0.3s ease, background-color 0.3s ease;
+    }
+
+    .radar-status-bar.delivered {
+      background-color: rgba(22, 163, 74, 0.16);
+      border-color: var(--post-green);
+    }
+
+    .status-check-icon {
+      display: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background-color: var(--post-green);
+      color: #FFFFFF;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .radar-status-bar.delivered .status-check-icon {
+      display: flex;
+    }
+
+    .radar-status-text {
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: #F0F6FC;
+      line-height: 1.35;
+    }
+
+    .radar-status-bar.delivered .radar-status-text {
+      color: #DCFCE7;
+      font-weight: 700;
+    }
+
+    /* =====================================================================
+       PHASE 4 : CARTE MESSAGERIE DIRECTE FAÇON WHATSAPP
+       ===================================================================== */
+    .message-card {
+      background-color: var(--post-white);
+      border: 1px solid var(--post-border);
+      border-radius: 10px;
+      overflow: hidden;
+      display: none;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    .message-card.visible {
+      display: block;
+      animation: slideUpCard 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes slideUpCard {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message-card-header {
+      background-color: #FAFAFA;
+      border-bottom: 1px solid var(--post-border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .msg-contact {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .msg-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: var(--post-yellow);
+      border: 1px solid #DFB200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .msg-contact-name {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--post-charcoal);
+      line-height: 1.2;
+    }
+
+    .msg-contact-sub {
+      font-size: 0.76rem;
+      color: var(--post-green);
+      font-weight: 600;
+    }
+
+    .message-card-body {
+      padding: 16px;
+      background-color: #F4F5F3;
+    }
+
+    /* État 1 : Enregistrement en cours façon WhatsApp */
+    .wa-recording {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background-color: var(--post-white);
+      border: 1px solid var(--post-border);
+      border-radius: 18px;
+      padding: 11px 15px;
+      width: fit-content;
+      max-width: 100%;
+    }
+
+    .wa-mic-pulse {
+      color: var(--post-green);
+      display: flex;
+      align-items: center;
+      animation: micPulse 1s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes micPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.18); opacity: 0.55; }
+    }
+
+    .wa-recording-text {
+      font-size: 0.86rem;
+      color: var(--post-muted);
+      font-style: italic;
+    }
+
+    .wa-dots {
+      display: inline-flex;
+      gap: 3px;
+      margin-left: 2px;
+    }
+
+    .wa-dots span {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background-color: var(--post-green);
+      animation: dotBounce 1.2s infinite ease-in-out;
+    }
+
+    .wa-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .wa-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes dotBounce {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+      40% { transform: translateY(-4px); opacity: 1; }
+    }
+
+    /* État 2 : Bulle vocale reçue façon WhatsApp */
+    .wa-voice-bubble {
+      display: none;
+      background-color: var(--wa-bubble);
+      border: 1px solid var(--wa-border);
+      border-radius: 12px 12px 12px 4px;
+      padding: 12px 14px 10px;
+      max-width: 420px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .wa-voice-bubble.visible {
+      display: block;
+      animation: bubblePop 0.28s ease-out;
+    }
+
+    @keyframes bubblePop {
+      from { opacity: 0; transform: scale(0.96) translateY(6px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .wa-bubble-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .wa-play-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: none;
+      background-color: var(--post-charcoal);
+      color: var(--post-white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.12s ease, background-color 0.15s ease;
+    }
+
+    .wa-play-btn:hover {
+      background-color: #333333;
+    }
+
+    .wa-play-btn:active {
+      transform: scale(0.95);
+    }
+
+    .wa-play-btn.pulse-attention {
+      background-color: var(--post-green);
+      animation: playPulse 1.4s infinite;
+    }
+
+    @keyframes playPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.6); }
+      50% { box-shadow: 0 0 0 9px rgba(22, 163, 74, 0); }
+    }
+
+    .wa-wave-area {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .wa-waveform {
+      display: flex;
+      align-items: center;
+      gap: 2.5px;
+      height: 30px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .wa-bar {
+      flex: 1;
+      border-radius: 999px;
+      background-color: #A7C4A0;
+      transition: background-color 0.12s ease, transform 0.15s ease;
+    }
+
+    .wa-bar.played {
+      background-color: #16803C;
+    }
+
+    .wa-waveform.playing .wa-bar.active-bar {
+      transform: scaleY(1.18);
+    }
+
+    .wa-bubble-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 0.72rem;
+      color: #54656F;
+    }
+
+    .wa-timer {
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+
+    .wa-timestamp {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .wa-ticks {
+      color: var(--wa-blue);
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .wa-autoplay-hint {
+      display: none;
+      margin-top: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #0F5127;
+      background-color: rgba(22, 163, 74, 0.12);
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+
+    .wa-autoplay-hint.visible {
+      display: block;
+    }
+
+    .audio-missing-note {
+      display: none;
+      margin-top: 10px;
+      font-size: 0.76rem;
+      color: var(--post-muted);
+      background-color: var(--post-white);
+      border: 1px dashed var(--post-border);
+      padding: 8px 10px;
+      border-radius: 6px;
+    }
+
+    .audio-missing-note.visible {
+      display: block;
+    }
+
+    /* =====================================================================
+       PIED DE PAGE INSTITUTIONNEL SOMBRE
+       ===================================================================== */
+    .post-footer {
+      background-color: #2B2B2B;
+      color: #D1D5DB;
+      padding: 16px;
+      text-align: center;
+      font-size: 0.78rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== EN-TÊTE OFFICIEL LA POSTE SUISSE ==================== -->
+  <header class="post-header">
+    <div class="header-inner">
+      <a href="#top" class="post-logo-link" aria-label="La Poste Suisse" onclick="return false;">
+        <span class="post-logo-text">LA POSTE</span>
+        <!-- Petite icône carrée à coins arrondis avec bordure rouge et croix suisse rouge -->
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect x="1" y="1" width="18" height="18" rx="3" stroke="#DA291C" stroke-width="1.8" />
+          <rect x="8.5" y="4.5" width="3" height="11" fill="#DA291C" />
+          <rect x="4.5" y="8.5" width="11" height="3" fill="#DA291C" />
+        </svg>
+      </a>
+
+      <span class="header-lang">FR</span>
+    </div>
+  </header>
+
+  <!-- ==================== BARRE FIL D'ARIANE ==================== -->
+  <nav class="breadcrumb-bar" aria-label="Fil d'Ariane">
+    <div class="breadcrumb-inner">
+      <span class="breadcrumb-root">Mes envois</span>
+      <span class="breadcrumb-sep" aria-hidden="true">›</span>
+      <span class="breadcrumb-current">Reprogrammer la distribution</span>
+    </div>
+  </nav>
+
+  <!-- ==================== CONTENU PRINCIPAL ==================== -->
+  <main class="main-container">
+
+    <!-- ===========================================================
+         PAGE 1 : SUIVI DES ENVOIS & CHOIX DU MODE DE LIVRAISON
+         =========================================================== -->
+    <section id="viewTracking" class="view active" aria-label="Suivi de votre envoi">
+      <!-- Carte 1 : Envoi suivi -->
+      <div class="card">
+        <div class="parcel-header">
+          <div>
+            <span class="parcel-label">ENVOI SUIVI</span>
+            <span class="tracking-code">2312-FC420-P7</span>
+          </div>
+          <span class="status-badge">
+            <span class="status-badge-dot"></span>
+            Avisé le 23.12.2026
+          </span>
+        </div>
+
+        <div class="parcel-meta-row">
+          <span class="parcel-meta-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span>Base de distribution : <strong>Genève</strong></span>
+          </span>
+          <span class="parcel-meta-item">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+            <span>Format : <strong>Pli / Colis</strong></span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Carte 2 : Options de livraison -->
+      <div class="card">
+        <h2 class="card-title">Choisissez votre option de livraison</h2>
+        <p class="card-subtitle">
+          Sélectionnez un créneau pour recevoir votre envoi à votre adresse habituelle.
+        </p>
+
+        <div class="options-list" role="radiogroup" aria-label="Options de livraison disponibles">
+          <!-- Option 1 : Nouvelle distribution demain -->
+          <label class="option-card selected" id="cardStandard">
+            <input type="radio" name="deliveryOption" value="standard" class="option-radio" checked />
+            <div class="option-body">
+              <div class="option-top">
+                <span class="option-name">Nouvelle distribution demain</span>
+                <span class="option-badge-grey">Gratuit</span>
+              </div>
+              <p class="option-desc">
+                Jeudi 24 décembre 2026 (08h00 – 12h00)
+              </p>
+            </div>
+          </label>
+
+          <!-- Option 2 : Livraison instantanée (Maintenant) -->
+          <label class="option-card" id="cardInstant">
+            <input type="radio" name="deliveryOption" value="instant" class="option-radio" />
+            <div class="option-body">
+              <div class="option-top">
+                <span class="option-name">Livraison instantanée (Maintenant)</span>
+              </div>
+              <span class="option-badge-green">Express • Gratuit</span>
+              <p class="option-desc">
+                Votre facteur est encore dans votre secteur
+              </p>
+            </div>
+          </label>
+        </div>
+
+        <button id="btnConfirmDelivery" type="button" class="btn-post-primary">
+          Confirmer la livraison
+        </button>
+      </div>
+
+      <!-- Ligne discrète sous la carte 2 -->
+      <div class="subcard-info-row">
+        <span>Service client : 0848 888 888</span>
+        <span>Suivi en temps réel</span>
+      </div>
+    </section>
+
+    <!-- ===========================================================
+         PAGE 2 : SUIVI LIVE DU FACTEUR (RADAR + WHATSAPP VOCAL)
+         =========================================================== -->
+    <section id="viewLiveRadar" class="view" aria-label="Suivi en direct du facteur">
+      <div class="live-header-bar">
+        <h2>Suivi en direct de votre livraison</h2>
+        <span class="live-ref">99.00.123456.23122026</span>
+      </div>
+
+      <!-- Module Radar GPS Cinématique -->
+      <div class="radar-module">
+        <div class="radar-topbar">
+          <span id="radarSignalLabel" class="radar-signal">
+            <span class="signal-dot"></span>
+            <span id="radarSignalText">Liaison GPS en cours</span>
+          </span>
+          <span class="radar-sector">SECTEUR GENÈVE</span>
+        </div>
+
+        <div id="radarCanvasContainer" class="radar-canvas-container">
+          <canvas id="radarCanvas"></canvas>
+        </div>
+
+        <div class="radar-metrics">
+          <div class="metric-tile">
+            <span class="metric-label">Distance estimée</span>
+            <span id="metricDistance" class="metric-value">850 m</span>
+          </div>
+          <div class="metric-tile">
+            <span class="metric-label">Statut tournée</span>
+            <span id="metricState" class="metric-value">EN ATTENTE</span>
+          </div>
+        </div>
+
+        <div id="radarStatusBar" class="radar-status-bar">
+          <span class="status-check-icon" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </span>
+          <span id="radarStatusText" class="radar-status-text">
+            Envoi de la demande au facteur le plus proche...
+          </span>
+        </div>
+      </div>
+
+      <!-- Phase 4 : Carte Messagerie Directe (style WhatsApp) -->
+      <div id="messageCard" class="message-card" aria-live="polite">
+        <div class="message-card-header">
+          <div class="msg-contact">
+            <div class="msg-avatar" aria-hidden="true">
+              <!-- Icône facteur / courrier sobre -->
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1A1A1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <div>
+              <div class="msg-contact-name">Messagerie directe — Votre facteur</div>
+              <div id="msgContactSub" class="msg-contact-sub">en ligne</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="message-card-body">
+          <!-- Indicateur d'enregistrement façon WhatsApp (23.5s -> 28.0s) -->
+          <div id="waRecordingState" class="wa-recording">
+            <span class="wa-mic-pulse" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+              </svg>
+            </span>
+            <span class="wa-recording-text">
+              Le facteur est en train d'enregistrer un message vocal
+              <span class="wa-dots" aria-hidden="true"><span></span><span></span><span></span></span>
+            </span>
+          </div>
+
+          <!-- Bulle vocale reçue façon WhatsApp (à partir de 28.0s) -->
+          <div id="waVoiceBubble" class="wa-voice-bubble">
+            <div class="wa-bubble-row">
+              <button id="waPlayBtn" type="button" class="wa-play-btn" aria-label="Lire ou mettre en pause le message vocal">
+                <!-- Icône Play par défaut -->
+                <svg id="iconPlay" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="6 4 20 12 6 20 6 4"></polygon>
+                </svg>
+                <svg id="iconPause" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display:none;">
+                  <rect x="6" y="4" width="4" height="16" rx="1"></rect>
+                  <rect x="14" y="4" width="4" height="16" rx="1"></rect>
+                </svg>
+              </button>
+
+              <div class="wa-wave-area">
+                <div id="waWaveform" class="wa-waveform" title="Cliquer pour avancer dans le message"></div>
+                <div class="wa-bubble-meta">
+                  <span id="waTimer" class="wa-timer">0:00</span>
+                  <span class="wa-timestamp">
+                    <span>À l'instant</span>
+                    <!-- Double coche bleue façon WhatsApp -->
+                    <span class="wa-ticks" aria-label="Lu">
+                      <svg width="16" height="11" viewBox="0 0 16 11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="1 5.5 4.2 8.8 10.5 1.8"></polyline>
+                        <polyline points="5.5 5.5 8.7 8.8 15 1.8"></polyline>
+                      </svg>
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div id="waAutoplayHint" class="wa-autoplay-hint">
+              Appuyez sur lecture pour écouter le message
+            </div>
+          </div>
+
+          <div id="audioMissingNote" class="audio-missing-note">
+            Fichier <strong>livreur.mp3</strong> non trouvé dans cet aperçu. Assurez-vous que <code>livreur.mp3</code> est bien dans le même dossier que <code>index.html</code> sur GitHub Pages.
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== MODALE LIVRAISON STANDARD (24.12.2026) ==================== -->
+  <div id="standardModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalStandardTitle">
+    <div class="modal-box">
+      <h3 id="modalStandardTitle" class="modal-title">Livraison standard enregistrée</h3>
+      <p class="modal-text">
+        Votre livraison est programmée pour demain <strong>24.12.2026</strong> (créneau 08h00 – 12h00, dans votre boîte aux lettres).
+      </p>
+      <div class="modal-tip">
+        <strong>Astuce :</strong> un facteur est actuellement dans votre secteur si vous préférez la livraison instantanée aujourd'hui.
+      </div>
+      <div class="modal-actions">
+        <button id="btnSwitchToInstant" type="button" class="btn-post-primary">
+          Passer à la livraison instantanée maintenant
+        </button>
+        <button id="btnCloseModal" type="button" class="btn-post-secondary">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PIED DE PAGE ==================== -->
+  <footer class="post-footer">
+    © 2026 La Poste Suisse SA • poste.ch/mes-envois • Aide &amp; Contact
+  </footer>
+
+  <!-- Élément audio relié à livreur.mp3 -->
+  <audio id="postmanAudio" src="livreur.mp3" preload="auto" playsinline></audio>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ===================================================================
+      // RÉFÉRENCES DOM
+      // ===================================================================
+      const viewTracking = document.getElementById('viewTracking');
+      const viewLiveRadar = document.getElementById('viewLiveRadar');
+
+      const cardStandard = document.getElementById('cardStandard');
+      const cardInstant = document.getElementById('cardInstant');
+      const radioInputs = document.querySelectorAll('input[name="deliveryOption"]');
+      const btnConfirmDelivery = document.getElementById('btnConfirmDelivery');
+
+      const standardModal = document.getElementById('standardModal');
+      const btnSwitchToInstant = document.getElementById('btnSwitchToInstant');
+      const btnCloseModal = document.getElementById('btnCloseModal');
+
+      // Radar DOM
+      const radarCanvas = document.getElementById('radarCanvas');
+      const radarCtx = radarCanvas.getContext('2d');
+      const radarCanvasContainer = document.getElementById('radarCanvasContainer');
+      const radarSignalLabel = document.getElementById('radarSignalLabel');
+      const radarSignalText = document.getElementById('radarSignalText');
+      const metricDistance = document.getElementById('metricDistance');
+      const metricState = document.getElementById('metricState');
+      const radarStatusBar = document.getElementById('radarStatusBar');
+      const radarStatusText = document.getElementById('radarStatusText');
+
+      // Messagerie WhatsApp & Audio DOM
+      const messageCard = document.getElementById('messageCard');
+      const msgContactSub = document.getElementById('msgContactSub');
+      const waRecordingState = document.getElementById('waRecordingState');
+      const waVoiceBubble = document.getElementById('waVoiceBubble');
+      const waPlayBtn = document.getElementById('waPlayBtn');
+      const iconPlay = document.getElementById('iconPlay');
+      const iconPause = document.getElementById('iconPause');
+      const waWaveform = document.getElementById('waWaveform');
+      const waTimer = document.getElementById('waTimer');
+      const waAutoplayHint = document.getElementById('waAutoplayHint');
+      const audioMissingNote = document.getElementById('audioMissingNote');
+
+      const postmanAudio = document.getElementById('postmanAudio');
+
+      // Web Audio API Context pour le chime discret à 28s
+      let audioCtx = null;
+
+      // ===================================================================
+      // 1. INTERACTIONS PAGE 1 (CARTES RADIO & MODALE STANDARD)
+      // ===================================================================
+      function updateSelectedCards() {
+        const selected = document.querySelector('input[name="deliveryOption"]:checked').value;
+        cardStandard.classList.toggle('selected', selected === 'standard');
+        cardInstant.classList.toggle('selected', selected === 'instant');
+      }
+
+      radioInputs.forEach((input) => {
+        input.addEventListener('change', updateSelectedCards);
+      });
+
+      // Déverrouillage critique de l'audio mobile (iOS Safari / Android Chrome)
+      // exécuté de façon synchrone dans le gestionnaire de clic utilisateur
+      function unlockMobileAudio() {
+        try {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) {
+            if (!audioCtx) {
+              audioCtx = new AudioContextClass();
+            }
+            if (audioCtx.state === 'suspended') {
+              audioCtx.resume().catch(() => {});
+            }
+          }
+        } catch (e) {}
+
+        try {
+          postmanAudio.muted = true;
+          const p = postmanAudio.play();
+          if (p !== undefined) {
+            p.then(() => {
+              postmanAudio.pause();
+              postmanAudio.currentTime = 0;
+              postmanAudio.muted = false;
+            }).catch(() => {
+              postmanAudio.muted = false;
+            });
+          } else {
+            postmanAudio.pause();
+            postmanAudio.currentTime = 0;
+            postmanAudio.muted = false;
+          }
+        } catch (e) {
+          postmanAudio.muted = false;
+        }
+      }
+
+      // Chime discret et agréable via Web Audio API lors de la réception du vocal
+      function playNotificationChime() {
+        try {
+          if (!audioCtx) {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (AudioContextClass) audioCtx = new AudioContextClass();
+          }
+          if (!audioCtx) return;
+          if (audioCtx.state === 'suspended') {
+            audioCtx.resume().catch(() => {});
+          }
+
+          const now = audioCtx.currentTime;
+          const notes = [659.25, 880.0]; // Mi5 -> La5 doux
+
+          notes.forEach((freq, idx) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.11);
+
+            gain.gain.setValueAtTime(0.0001, now + idx * 0.11);
+            gain.gain.exponentialRampToValueAtTime(0.14, now + idx * 0.11 + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.11 + 0.28);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now + idx * 0.11);
+            osc.stop(now + idx * 0.11 + 0.3);
+          });
+        } catch (e) {}
+      }
+
+      function launchInstantDeliveryFlow() {
+        unlockMobileAudio();
+        standardModal.classList.remove('open');
+        viewTracking.classList.remove('active');
+        viewLiveRadar.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        startDeliveryRadarSequence();
+      }
+
+      btnConfirmDelivery.addEventListener('click', () => {
+        const selected = document.querySelector('input[name="deliveryOption"]:checked').value;
+        if (selected === 'standard') {
+          standardModal.classList.add('open');
+        } else {
+          launchInstantDeliveryFlow();
+        }
+      });
+
+      btnSwitchToInstant.addEventListener('click', () => {
+        document.querySelector('input[name="deliveryOption"][value="instant"]').checked = true;
+        updateSelectedCards();
+        launchInstantDeliveryFlow();
+      });
+
+      btnCloseModal.addEventListener('click', () => {
+        standardModal.classList.remove('open');
+      });
+
+      standardModal.addEventListener('click', (e) => {
+        if (e.target === standardModal) {
+          standardModal.classList.remove('open');
+        }
+      });
+
+      // ===================================================================
+      // 2. CONSTRUCTION DE LA FORME D'ONDE WHATSAPP (32 BARRES)
+      // ===================================================================
+      const waveHeights = [
+        30, 52, 40, 72, 85, 60, 42, 78, 95, 68, 45, 82, 90, 58, 38, 70,
+        88, 62, 48, 84, 96, 74, 50, 66, 80, 56, 44, 72, 60, 42, 50, 32
+      ];
+      const waveBars = [];
+
+      waveHeights.forEach((h) => {
+        const bar = document.createElement('span');
+        bar.className = 'wa-bar';
+        bar.style.height = `${h}%`;
+        waWaveform.appendChild(bar);
+        waveBars.push(bar);
+      });
+
+      // ===================================================================
+      // 3. SÉQUENCE RADAR GPS EN 4 PHASES RÉALISTES (28 SECONDES)
+      // ===================================================================
+      let radarAnimId = null;
+      let sequenceStarted = false;
+
+      function resizeRadarCanvas() {
+        const rect = radarCanvas.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const size = Math.max(220, Math.floor(rect.width));
+        radarCanvas.width = size * dpr;
+        radarCanvas.height = size * dpr;
+        radarCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        return size;
+      }
+
+      function drawRadar(size, elapsedMs) {
+        const ctx = radarCtx;
+        const cx = size / 2;
+        const cy = size / 2;
+        const maxR = size * 0.44;
+        const sec = elapsedMs / 1000;
+        const isDelivered = sec >= 23.0;
+
+        ctx.clearRect(0, 0, size, size);
+
+        // 1. Anneaux concentriques
+        ctx.strokeStyle = isDelivered
+          ? 'rgba(22, 163, 74, 0.35)'
+          : 'rgba(148, 163, 184, 0.22)';
+        ctx.lineWidth = 1;
+        [0.25, 0.5, 0.75, 1].forEach((f) => {
+          ctx.beginPath();
+          ctx.arc(cx, cy, maxR * f, 0, Math.PI * 2);
+          ctx.stroke();
+        });
+
+        // 2. Réticule (croix)
+        ctx.beginPath();
+        ctx.moveTo(cx - maxR, cy);
+        ctx.lineTo(cx + maxR, cy);
+        ctx.moveTo(cx, cy - maxR);
+        ctx.lineTo(cx, cy + maxR);
+        ctx.stroke();
+
+        // 3. Faisceau radar rotatif
+        const sweepAngle = ((elapsedMs / 2600) * Math.PI * 2) % (Math.PI * 2);
+        const trailArc = 0.72;
+        for (let i = 0; i < 20; i++) {
+          const frac = i / 20;
+          const a1 = sweepAngle - trailArc * frac;
+          const a2 = sweepAngle - trailArc * ((i + 1) / 20);
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.arc(cx, cy, maxR, a2, a1);
+          ctx.closePath();
+          const alpha = (1 - frac) * 0.16;
+          ctx.fillStyle = isDelivered
+            ? `rgba(22, 163, 74, ${alpha.toFixed(3)})`
+            : `rgba(255, 204, 0, ${alpha.toFixed(3)})`;
+          ctx.fill();
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(sweepAngle) * maxR, cy + Math.sin(sweepAngle) * maxR);
+        ctx.strokeStyle = isDelivered ? '#16A34A' : 'rgba(255, 204, 0, 0.75)';
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+
+        // 4. Cible centrale fixe : Votre immeuble
+        const slowPulse = (Math.sin(elapsedMs / 320) + 1) / 2;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 7 + slowPulse * 7, 0, Math.PI * 2);
+        ctx.strokeStyle = isDelivered
+          ? `rgba(22, 163, 74, ${(0.85 - slowPulse * 0.45).toFixed(2)})`
+          : `rgba(255, 255, 255, ${(0.45 - slowPulse * 0.25).toFixed(2)})`;
+        ctx.lineWidth = 1.8;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, 4.5, 0, Math.PI * 2);
+        ctx.fillStyle = isDelivered ? '#16A34A' : '#FFFFFF';
+        ctx.fill();
+
+        ctx.font = '600 10px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#CBD5E1';
+        ctx.fillText('Votre immeuble', cx, cy + 22);
+
+        // 5. Point du Facteur selon la phase exacte
+        let radialRatio = 0.88; // Phase 1 : loin sur l'anneau extérieur
+        if (sec >= 6.0 && sec < 17.0) {
+          // Phase 2 : approche douce de 6s à 17s (11 secondes)
+          const t = (sec - 6.0) / 11.0;
+          const eased = t * t * (3 - 2 * t);
+          radialRatio = 0.88 * (1 - eased);
+        } else if (sec >= 17.0) {
+          // Phase 3 & 4 : arrivé au centre
+          radialRatio = 0;
+        }
+
+        const baseAngle = -Math.PI * 0.72;
+        const moveAngle = sec >= 6.0 && sec < 17.0
+          ? baseAngle + ((sec - 6.0) / 11.0) * 0.35
+          : baseAngle;
+
+        const fx = cx + Math.cos(moveAngle) * (maxR * radialRatio);
+        const fy = cy + Math.sin(moveAngle) * (maxR * radialRatio);
+
+        // Effet visuel du point facteur :
+        // Phase 1 (0-6s) : clignotement lent en attente
+        // Phase 2 (6-17s) : approche constante
+        // Phase 3 (17-23s) : pulsation ambre au bas de l'immeuble
+        // Phase 4 (>=23s) : verrouillé vert livré
+        if (isDelivered) {
+          ctx.beginPath();
+          ctx.arc(cx, cy, 12, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(22, 163, 74, 0.25)';
+          ctx.fill();
+        } else if (sec >= 17.0) {
+          // Arrivé au bas de l'immeuble : pulsation ambre
+          const amberPulse = (Math.sin(elapsedMs / 220) + 1) / 2;
+          ctx.beginPath();
+          ctx.arc(fx, fy, 9 + amberPulse * 9, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 204, 0, ${(0.38 - amberPulse * 0.2).toFixed(2)})`;
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(fx, fy, 6, 0, Math.PI * 2);
+          ctx.fillStyle = '#FFCC00';
+          ctx.fill();
+        } else {
+          const blinkAlpha = sec < 6.0 ? (0.45 + 0.55 * slowPulse) : 1;
+          ctx.beginPath();
+          ctx.arc(fx, fy, 11 + slowPulse * 4, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 204, 0, ${(0.22 * blinkAlpha).toFixed(2)})`;
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.arc(fx, fy, 5.5, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 204, 0, ${blinkAlpha.toFixed(2)})`;
+          ctx.fill();
+          ctx.strokeStyle = '#0D151A';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          ctx.font = '700 10px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+          ctx.fillStyle = '#FFCC00';
+          ctx.textAlign = 'left';
+          ctx.fillText('Facteur', fx + 10, fy + 3);
+        }
+      }
+
+      function startDeliveryRadarSequence() {
+        if (sequenceStarted) return;
+        sequenceStarted = true;
+
+        let size = resizeRadarCanvas();
+        const startTime = performance.now();
+
+        let deliveredTriggered = false;
+        let recordingTriggered = false;
+        let voiceReceivedTriggered = false;
+
+        const onResize = () => {
+          size = resizeRadarCanvas();
+        };
+        window.addEventListener('resize', onResize);
+
+        function tick(now) {
+          const elapsedMs = now - startTime;
+          const sec = elapsedMs / 1000;
+
+          // --- Calcul distance réaliste ---
+          let distMeters = 850;
+          if (sec >= 6.0 && sec < 17.0) {
+            const t = (sec - 6.0) / 11.0;
+            const eased = t * t * (3 - 2 * t);
+            distMeters = Math.max(0, Math.round(850 * (1 - eased)));
+          } else if (sec >= 17.0) {
+            distMeters = 0;
+          }
+          metricDistance.textContent = `${distMeters} m`;
+
+          // --- Statuts détaillés multi-phases ---
+          if (sec < 3.0) {
+            radarStatusText.textContent = 'Envoi de la demande au facteur le plus proche...';
+            metricState.textContent = 'NOTIFICATION';
+          } else if (sec < 5.5) {
+            radarStatusText.textContent = 'Notification reçue par le facteur du secteur...';
+            metricState.textContent = 'REÇUE';
+          } else if (sec < 10.0) {
+            radarStatusText.textContent = 'Course confirmée — Le facteur se met en route vers votre adresse.';
+            metricState.textContent = 'EN ROUTE';
+            radarSignalText.textContent = 'Facteur en approche';
+          } else if (sec < 14.5) {
+            radarStatusText.textContent = 'Le facteur approche de votre rue...';
+            metricState.textContent = 'APPROCHE';
+          } else if (sec < 17.0) {
+            radarStatusText.textContent = 'Arrivée imminente (moins de 100 m)...';
+            metricState.textContent = '< 100 M';
+          } else if (sec < 19.5) {
+            radarStatusText.textContent = "Le facteur est arrivé au bas de l'immeuble.";
+            metricState.textContent = 'SUR PLACE';
+            radarSignalText.textContent = "Arrivé à l'immeuble";
+          } else if (sec < 23.0) {
+            radarStatusText.textContent = 'Accès aux boîtes aux lettres — Dépôt du colis en cours...';
+            metricState.textContent = 'DÉPÔT...';
+          } else if (!deliveredTriggered) {
+            // 23.0s : Colis livré !
+            deliveredTriggered = true;
+            radarCanvasContainer.classList.add('delivered');
+            radarSignalLabel.classList.add('delivered');
+            radarSignalText.textContent = 'Livraison confirmée';
+            metricDistance.classList.add('delivered');
+            metricState.classList.add('delivered');
+            metricState.textContent = 'LIVRÉ ✓';
+            radarStatusBar.classList.add('delivered');
+            radarStatusText.textContent = 'Colis livré dans votre boîte aux lettres !';
+          }
+
+          // --- Phase 4 : 23.5s -> Carte messagerie WhatsApp (enregistrement) ---
+          if (sec >= 23.5 && !recordingTriggered) {
+            recordingTriggered = true;
+            messageCard.classList.add('visible');
+            msgContactSub.textContent = 'enregistre un message vocal...';
+            setTimeout(() => {
+              messageCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 120);
+          }
+
+          // --- Phase 4 : 28.0s -> Chime + Bulle vocale + Lecture automatique ---
+          if (sec >= 28.0 && !voiceReceivedTriggered) {
+            voiceReceivedTriggered = true;
+            playNotificationChime();
+            waRecordingState.style.display = 'none';
+            waVoiceBubble.classList.add('visible');
+            msgContactSub.textContent = 'en ligne';
+            startAutomaticVoiceMessage();
+          }
+
+          drawRadar(size, elapsedMs);
+          radarAnimId = requestAnimationFrame(tick);
+        }
+
+        radarAnimId = requestAnimationFrame(tick);
+      }
+
+      // ===================================================================
+      // 4. LECTEUR VOCAL FAÇON WHATSAPP (PLAYBACK AUTOMATIQUE & CONTRÔLES)
+      // ===================================================================
+      function formatSeconds(sec) {
+        if (!isFinite(sec) || sec < 0) return '0:00';
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
+        return `${m}:${String(s).padStart(2, '0')}`;
+      }
+
+      function updatePlayButtonUI(isPlaying) {
+        iconPlay.style.display = isPlaying ? 'none' : 'block';
+        iconPause.style.display = isPlaying ? 'block' : 'none';
+        waWaveform.classList.toggle('playing', isPlaying);
+        if (isPlaying) {
+          waPlayBtn.classList.remove('pulse-attention');
+          waAutoplayHint.classList.remove('visible');
+        }
+      }
+
+      function updateWaveformProgress(ratio) {
+        const clamped = Math.max(0, Math.min(1, ratio));
+        const activeIndex = Math.floor(clamped * waveBars.length);
+        waveBars.forEach((bar, idx) => {
+          bar.classList.toggle('played', idx < activeIndex);
+          bar.classList.toggle('active-bar', idx === activeIndex);
+        });
+      }
+
+      function startAutomaticVoiceMessage() {
+        postmanAudio.muted = false;
+        postmanAudio.currentTime = 0;
+        const playPromise = postmanAudio.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              updatePlayButtonUI(true);
+            })
+            .catch(() => {
+              // Fallback discret uniquement si le navigateur bloque malgré le déverrouillage
+              updatePlayButtonUI(false);
+              waPlayBtn.classList.add('pulse-attention');
+              waAutoplayHint.classList.add('visible');
+            });
+        }
+      }
+
+      waPlayBtn.addEventListener('click', () => {
+        if (postmanAudio.paused) {
+          if (postmanAudio.ended) {
+            postmanAudio.currentTime = 0;
+          }
+          postmanAudio.play()
+            .then(() => updatePlayButtonUI(true))
+            .catch(() => {});
+        } else {
+          postmanAudio.pause();
+          updatePlayButtonUI(false);
+        }
+      });
+
+      // Clic sur la forme d'onde pour avancer/reculer dans le message vocal
+      waWaveform.addEventListener('click', (e) => {
+        if (!isFinite(postmanAudio.duration) || postmanAudio.duration <= 0) return;
+        const rect = waWaveform.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        postmanAudio.currentTime = ratio * postmanAudio.duration;
+        updateWaveformProgress(ratio);
+      });
+
+      postmanAudio.addEventListener('loadedmetadata', () => {
+        waTimer.textContent = formatSeconds(postmanAudio.duration);
+        audioMissingNote.classList.remove('visible');
+      });
+
+      postmanAudio.addEventListener('timeupdate', () => {
+        waTimer.textContent = formatSeconds(postmanAudio.currentTime);
+        if (isFinite(postmanAudio.duration) && postmanAudio.duration > 0) {
+          updateWaveformProgress(postmanAudio.currentTime / postmanAudio.duration);
+        }
+      });
+
+      postmanAudio.addEventListener('play', () => updatePlayButtonUI(true));
+      postmanAudio.addEventListener('pause', () => updatePlayButtonUI(false));
+      postmanAudio.addEventListener('ended', () => {
+        updatePlayButtonUI(false);
+        updateWaveformProgress(1);
+        if (isFinite(postmanAudio.duration)) {
+          waTimer.textContent = formatSeconds(postmanAudio.duration);
+        }
+      });
+
+      postmanAudio.addEventListener('error', () => {
+        audioMissingNote.classList.add('visible');
+      });
+    })();
+  </script>
+</body>
+</html>
